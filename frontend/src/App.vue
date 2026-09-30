@@ -32,7 +32,7 @@ onMounted(async () => {
             v-for="m in marks"
             :key="m.trip_no"
             class="bg-bus-dot"
-            :class="{ 'bg-bus-tight': m.pct < 15 }"
+            :class="{ 'bg-bus-tight': m.status === 'bunching', 'bg-bus-wide': m.status === 'large_gap', 'bg-bus-same': m.status === 'same_vehicle' }"
             :style="{ left: m.pct + '%' }"
             :title="`${m.trip_no} ${m.actual_arrive}`"
           >

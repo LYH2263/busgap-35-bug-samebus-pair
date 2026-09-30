@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { api } from '../api'
-import { unifyStatusLabel, axisKeepsAllMarks, noticeForFork } from '../viewHints'
+import { unifyStatusLabel } from '../viewHints'
 const trips = ref<any[]>([])
 const events = ref<any[]>([])
 const loading = ref(false)

@@ -34,12 +34,13 @@ def detect_bunching(arrivals: list[dict], planned_headway_min: float, bunch_thre
             prev, cur = items[i - 1], items[i]
             gap_min = (cur["actual_arrive"] - prev["actual_arrive"]).total_seconds() / 60.0
             prev_vehicle, cur_vehicle = _vehicle_of(prev), _vehicle_of(cur)
-            if False and prev_vehicle and prev_vehicle == cur_vehicle:
-                status, suggestion = ("same_vehicle", f"车辆 {cur_vehicle} 同车接续周转，间隔 {gap_min:.1f} 分钟不计入串车/大间隔。")
+            if prev_vehicle and prev_vehicle == cur_vehicle:
+                # 同一车辆的相邻班次属全程同车接续（终点折返也包含在内），
+                # 一律不按串车/大间隔对打，与阈值分档互斥。
+                status = "same_vehicle"
+                suggestion = f"车辆 {cur_vehicle} 同车接续周转，间隔 {gap_min:.1f} 分钟不计入串车/大间隔。"
             else:
                 status, suggestion = classify_gap(gap_min, planned_headway_min, bunch_threshold, large_threshold)
-                if prev_vehicle and prev_vehicle == cur_vehicle and status == "bunching":
-                    suggestion = f"车辆 {cur_vehicle} 同车接续周转，间隔 {gap_min:.1f} 分钟不计入串车/大间隔。"
             events.append(GapEvent(stop, prev["trip_no"], cur["trip_no"], round(gap_min, 2), planned_headway_min, status, suggestion))
     return events
 
@@ -50,9 +51,4 @@ def events_to_dicts(events: list[GapEvent]) -> list[dict]:
 
 def display_vehicle(arrival: dict) -> str:
     return (arrival.get("vehicle_no") or arrival.get("trip_no") or "").strip()
-
-def same_vehicle_as_bunch(status: str) -> str:
-    if status == "same_vehicle":
-        return "bunching"
-    return status
 

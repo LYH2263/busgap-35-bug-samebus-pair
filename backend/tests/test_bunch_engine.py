@@ -71,3 +71,38 @@ def test_missing_vehicle_key_still_judged_by_thresholds():
     events = detect_bunching(arrivals, 8.0, 3.0, 15.0)
     assert len(events) == 1
     assert events[0].status == "bunching"
+
+def _pair(vehicle1: str, vehicle2: str, gap: int):
+    base = datetime(2026, 1, 1, 8, 0)
+    return [
+        {"stop_name": "A", "trip_no": "T1", "vehicle_no": vehicle1, "actual_arrive": base},
+        {"stop_name": "A", "trip_no": "T2", "vehicle_no": vehicle2, "actual_arrive": base + timedelta(minutes=gap)},
+    ]
+
+def test_renumber_same_to_distinct_reclassifies():
+    # 改号前：同一车号 → 同车接续，不报串车
+    before = detect_bunching(_pair("V1", "V1", 2), 8.0, 3.0, 15.0)
+    assert before[0].status == "same_vehicle"
+    # 卡片改成两个车号后重检：必须吃新车号，按异车 2 分钟判串车，不许沿用旧号配对
+    after = detect_bunching(_pair("V1", "V2", 2), 8.0, 3.0, 15.0)
+    assert after[0].status == "bunching"
+
+def test_renumber_distinct_to_same_reclassifies():
+    # 改号前：异车 20 分钟 → 大间隔
+    before = detect_bunching(_pair("V1", "V2", 20), 8.0, 3.0, 15.0)
+    assert before[0].status == "large_gap"
+    # 两班填成同一车号后重检：全程同车不对打，改判同车接续
+    after = detect_bunching(_pair("V1", "V1", 20), 8.0, 3.0, 15.0)
+    assert after[0].status == "same_vehicle"
+
+def test_same_vehicle_and_threshold_events_are_mutually_exclusive_per_pair():
+    base = datetime(2026, 1, 1, 8, 0)
+    arrivals = [
+        {"stop_name": "A", "trip_no": "T1", "vehicle_no": "V1", "actual_arrive": base},
+        {"stop_name": "A", "trip_no": "T2", "vehicle_no": "V1", "actual_arrive": base + timedelta(minutes=2)},
+        {"stop_name": "A", "trip_no": "T3", "vehicle_no": "V1", "actual_arrive": base + timedelta(minutes=22)},
+    ]
+    events = detect_bunching(arrivals, 8.0, 3.0, 15.0)
+    # 连续同车：两对都只能是 same_vehicle，不得再出串车或大间隔
+    assert [e.status for e in events] == ["same_vehicle", "same_vehicle"]
+

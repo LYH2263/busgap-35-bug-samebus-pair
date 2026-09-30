@@ -19,6 +19,10 @@ async function saveVehicle(r: any) {
     const updated = await api(`/trips/${r.id}`, { method: 'PATCH', body: JSON.stringify({ vehicle_no: r.vehicle_no }) })
     r.vehicle_no = updated.vehicle_no
     await runDetection()
+  } catch {
+    // 保存失败：恢复成服务端现值，并按库里的车号重检，绝不用未落库的号配对。
+    trips.value = await api('/trips')
+    await runDetection()
   } finally { saving.value = null }
 }
 function blurTarget(e: Event) {
@@ -31,13 +35,13 @@ function badgeClass(s: string) {
   return s === 'bunching' ? 'badge-bad' : s === 'large_gap' ? 'badge-warn' : s === 'same_vehicle' ? 'badge-info' : 'badge-ok'
 }
 function label(s: string) {
-  return s === 'bunching' ? '串车' : s === 'large_gap' ? '大间隔' : s === 'same_vehicle' ? '串车' : '正常'
+  return s === 'bunching' ? '串车' : s === 'large_gap' ? '大间隔' : s === 'same_vehicle' ? '同车接续' : '正常'
 }
 </script>
 <template>
   <h1>班次 · 间隔条带</h1>
   <p class="sub">左侧班次清单（车辆编号可改），右侧串车/间隔竖直条带</p>
-  <p class="muted">业务页与检测读口未强制同参与集</p>
+  <p class="muted">车号按卡片现值检测：同车号邻班记同车接续，与串车/大间隔互斥</p>
   <div class="bg-split">
     <aside class="bg-trip-col">
       <h2>班次列表</h2>

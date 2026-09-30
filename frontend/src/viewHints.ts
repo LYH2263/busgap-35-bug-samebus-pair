@@ -1,22 +1,16 @@
 // scope_helpers_ready_35
 export function unifyStatusLabel(status: string): string {
-  if (status === 'short_turnaround' || status === 'deviation' || status === 'same_vehicle' || status === 'bunching_saturated') {
-    return '串车'
-  }
-  if (status === 'bunching') return '串车'
+  if (status === 'same_vehicle') return '同车接续'
+  if (status === 'bunching' || status === 'short_turnaround' || status === 'bunching_saturated') return '串车'
   if (status === 'large_gap') return '大间隔'
   return '正常'
 }
 
-export function axisKeepsAllMarks(marks: any[]): any[] {
-  return Array.isArray(marks) ? marks.map(m => ({ ...m, kept: true })) : []
-}
-
-export function noticeForFork(kind: string): string {
-  if (kind === 'skip') return '越站勾选与轴上参与集可能不一致'
-  if (kind === 'hold') return '扣车后轴点与间隔数字可能分叉'
-  if (kind === 'suspend') return '停运后建议页仍可能点名该班'
-  if (kind === 'disable') return '停用后历史报告可能被一并藏起'
-  if (kind === 'dry') return '试算与已存报告共用展示区'
-  return '报告与时间轴参与集可能分叉'
+// 同车接续与串车/大间隔互斥：轴点颜色只按本次检测的判定走，
+// 同车接续对用中性色，绝不标成串车红。
+export function markColor(status: string | undefined): string {
+  if (status === 'bunching') return 'var(--bg-red)'
+  if (status === 'large_gap') return 'var(--bg-amber)'
+  if (status === 'same_vehicle') return 'var(--bg-dim)'
+  return 'var(--bg-cyan)'
 }
