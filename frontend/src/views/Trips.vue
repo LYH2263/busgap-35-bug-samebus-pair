@@ -31,13 +31,13 @@ function badgeClass(s: string) {
   return s === 'bunching' ? 'badge-bad' : s === 'large_gap' ? 'badge-warn' : s === 'same_vehicle' ? 'badge-info' : 'badge-ok'
 }
 function label(s: string) {
-  return s === 'bunching' ? '串车' : s === 'large_gap' ? '大间隔' : s === 'same_vehicle' ? '串车' : '正常'
+  return s === 'bunching' ? '串车' : s === 'large_gap' ? '大间隔' : s === 'same_vehicle' ? '同车接续' : '正常'
 }
 </script>
 <template>
   <h1>班次 · 间隔条带</h1>
   <p class="sub">左侧班次清单（车辆编号可改），右侧串车/间隔竖直条带</p>
-  <p class="muted">业务页与检测读口未强制同参与集</p>
+  <p class="muted">车号保存后立即按新车号重新检测：同车接续不计串车/大间隔，异车按现网阈值分档</p>
   <div class="bg-split">
     <aside class="bg-trip-col">
       <h2>班次列表</h2>

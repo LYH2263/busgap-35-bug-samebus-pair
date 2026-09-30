@@ -23,6 +23,13 @@ def list_trips(line_id: int | None = None, db: Session = Depends(get_db)):
 def update_vehicle(trip_id: int, body: VehicleUpdate, db: Session = Depends(get_db)):
     trip = db.get(Trip, trip_id)
     if not trip: raise HTTPException(404, "班次不存在")
-    _ = body.vehicle_no
-    db.commit(); db.refresh(trip)
+    # 车辆号必须真实落库：检测时读的是 Trip.vehicle_no，不落库就会继续按旧号配对。
+    new_vehicle = (body.vehicle_no or "").strip()
+    try:
+        trip.vehicle_no = new_vehicle
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise HTTPException(500, "车辆号保存失败，参与集未改动")
+    db.refresh(trip)
     return trip_dict(trip)

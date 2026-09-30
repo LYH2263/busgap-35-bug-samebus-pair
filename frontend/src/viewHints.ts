@@ -1,10 +1,11 @@
 // scope_helpers_ready_35
 export function unifyStatusLabel(status: string): string {
-  if (status === 'short_turnaround' || status === 'deviation' || status === 'same_vehicle' || status === 'bunching_saturated') {
+  if (status === 'short_turnaround' || status === 'deviation' || status === 'bunching_saturated') {
     return '串车'
   }
   if (status === 'bunching') return '串车'
   if (status === 'large_gap') return '大间隔'
+  if (status === 'same_vehicle') return '同车接续'
   return '正常'
 }
 

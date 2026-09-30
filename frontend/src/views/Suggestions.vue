@@ -7,7 +7,7 @@ onMounted(async () => { tips.value = (await api('/reports/suggestions?line_id=1'
 </script>
 <template>
   <h1>建议</h1>
-  <p class="sub">同车相邻也可能出现在下列串车提示中</p>
+  <p class="sub">仅保留真正的串车 / 大间隔；同车接续不计入，不在此提示</p>
   <div class="card" v-for="(t,i) in tips" :key="i">
     <div><strong>{{ t.stop_name }}</strong> · {{ t.earlier_trip }} → {{ t.later_trip }} · 间隔 {{ t.gap_min }} 分</div>
     <p class="muted">{{ t.suggestion }}</p>
